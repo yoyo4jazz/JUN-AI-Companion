@@ -290,7 +290,8 @@ $$;
 create table if not exists public.materials (
   id           uuid primary key default gen_random_uuid(),
   booking_id   uuid not null references public.bookings(id) on delete cascade,
-  storage_path text not null unique,
+  storage_path text unique,               -- file di Storage, atau
+  url          text check (url ~* '^https?://'),  -- link luar (Google Drive, dll.)
   file_name    text not null,
   mime         text,
   size_bytes   bigint,
@@ -301,7 +302,8 @@ create table if not exists public.materials (
                check (status in ('submitted','approved','revision')),
   uploaded_by  uuid default auth.uid(),
   created_at   timestamptz not null default now(),
-  constraint materials_uploader_fk foreign key (uploaded_by) references public.profiles(id)
+  constraint materials_uploader_fk foreign key (uploaded_by) references public.profiles(id),
+  constraint materials_has_target check (storage_path is not null or url is not null)
 );
 create index if not exists materials_booking on public.materials (booking_id);
 
@@ -329,7 +331,8 @@ begin
     if tg_op = 'INSERT' then
       new.uploaded_by := auth.uid();
       new.status := 'submitted';
-      if public.path_booking(new.storage_path) is distinct from new.booking_id then
+      if new.storage_path is not null
+         and public.path_booking(new.storage_path) is distinct from new.booking_id then
         raise exception 'Path file tidak sesuai booking.';
       end if;
     elsif not public.is_staff() then
@@ -337,6 +340,7 @@ begin
     else
       new.booking_id   := old.booking_id;
       new.storage_path := old.storage_path;
+      new.url          := old.url;
       new.uploaded_by  := old.uploaded_by;
     end if;
   end if;

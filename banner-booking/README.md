@@ -10,7 +10,8 @@ lengkap dengan upload materi digital. Web statis (GitHub Pages) + database Supab
 - Libur nasional (merah) dan event PPGOS tampil di setiap tanggal.
 - **Booking**: klik tanggal mulai, lalu tanggal selesai, lalu *Lanjut Booking*. Slot langsung terkunci dengan status *Diajukan*.
 - Status booking: Diajukan → Disetujui → Tayang → Selesai (atau Ditolak / Dibatalkan).
-- **Materi digital**: upload gambar/video per booking, dengan cek format, ukuran file, dan dimensi. Tim internal bisa memberi status *Materi OK* atau *Perlu revisi*.
+- **Materi digital**: upload gambar/video per booking (dengan cek format, ukuran file, dan dimensi), **atau tempel link** Google Drive/Dropbox/WeTransfer. Tim internal bisa memberi status *Materi OK* atau *Perlu revisi*.
+- **Tombol WhatsApp** di detail booking membuka WhatsApp dengan pesan ringkasan booking dan link langsung ke detailnya. Fitur ini gratis karena hanya click-to-chat, tanpa API. Isi `WA_TEAM_NUMBER` di `config.js` supaya principal langsung chat ke nomor tim PPGOS.
 - **Peran pengguna**:
   - Pengunjung tanpa login hanya melihat ketersediaan slot, tanpa nama principal.
   - Principal hanya melihat booking dan materi miliknya sendiri.
@@ -27,6 +28,8 @@ Jadi tidak bisa diakali dari browser, dan dua orang yang booking pop up bersamaa
 1. Daftar di <https://supabase.com> (gratis, tidak perlu kartu kredit). Klik **New project**, pilih region **Southeast Asia (Singapore)**.
 2. Buka **SQL Editor → New query**. Paste seluruh isi `supabase/schema.sql`, lalu klik **Run**.
 3. Buat query baru lagi, paste isi `supabase/seed_2026.sql`, lalu klik **Run**. Ini mengisi placement dan kalender 2026.
+
+Kalau project dibuat **sebelum** fitur link materi ada, jalankan juga `supabase/update_01_link_materi.sql`.
 
 ### 2. Atur login
 Buka **Authentication → URL Configuration**:
@@ -87,5 +90,6 @@ banner-booking/
 ├── config.js           # URL & anon key Supabase (diisi saat setup)
 └── supabase/
     ├── schema.sql      # tabel, aturan booking, keamanan (RLS), storage
+    ├── update_01_link_materi.sql  # update: materi berupa link
     └── seed_2026.sql   # placement + libur nasional & event PPGOS 2026
 ```

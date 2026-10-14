@@ -614,26 +614,33 @@
         ${b.review_note ? `<dt>Catatan review</dt><dd style="white-space:pre-wrap;font-weight:400">${esc(b.review_note)}</dd>` : ''}
         <dt>Dibuat</dt><dd style="font-weight:400">${fmtDT(b.created_at)}</dd>
       </dl>
-      ${acts.length || isAdmin() ? `<div class="row" style="margin-top:14px">${acts.map(([s, t, c]) => `<button class="${c}" data-status="${s}">${t}</button>`).join('')}
-        ${isAdmin() ? '<span class="grow"></span><button class="danger sm" id="bk-del">Hapus permanen</button>' : ''}</div>` : ''}
+      <div class="row" style="margin-top:14px">${acts.map(([s, t, c]) => `<button class="${c}" data-status="${s}">${t}</button>`).join('')}
+        <a class="btn wa" id="bk-wa" target="_blank" rel="noopener" href="${esc(waLink(b, mats || []))}">WhatsApp</a>
+        ${isAdmin() ? '<span class="grow"></span><button class="danger sm" id="bk-del">Hapus permanen</button>' : ''}</div>
       <h3 style="margin-top:22px">Materi digital</h3>
       ${p && specText(p) ? `<p class="muted small">Spesifikasi: ${esc(specText(p))}</p>` : ''}
       ${canUpload ? `<div class="drop stack"><div><label for="m-files">Upload file materi (bisa lebih dari satu)</label>
         <input type="file" id="m-files" multiple accept="${esc(acceptAttr(p))}"></div>
         <div><label for="m-note">Catatan untuk file ini (opsional)</label><input id="m-note" maxlength="300" placeholder="mis. versi revisi 2"></div>
-        <div class="row"><button class="primary" id="m-up">Upload</button><span class="muted small" id="m-prog"></span></div></div>` : ''}
+        <div class="row"><button class="primary" id="m-up">Upload</button><span class="muted small" id="m-prog"></span></div>
+        <div><label for="m-url">Atau tempel link materi (Google Drive, Dropbox, WeTransfer, dll.)</label>
+        <div class="row"><input id="m-url" class="grow" type="url" placeholder="https://drive.google.com/..."><button id="m-link">Tambah link</button></div>
+        <p class="muted small" style="margin:4px 0 0">Pastikan akses link di-set "Siapa saja yang memiliki link" agar tim bisa membukanya.</p></div></div>` : ''}
       <div class="mats" id="mats" style="margin-top:12px">${(mats || []).length ? '' : '<p class="muted">Belum ada materi.</p>'}</div>
     `, (body, close) => {
       $$('[data-status]', body).forEach((btn) => btn.onclick = () => changeStatus(b, btn.dataset.status, close));
       if ($('#bk-del', body)) $('#bk-del', body).onclick = async () => {
         if (!confirm('Hapus booking ini beserta semua materinya? Tidak bisa dibatalkan.')) return;
-        const paths = (mats || []).map((m) => m.storage_path);
+        const paths = (mats || []).map((m) => m.storage_path).filter(Boolean);
         if (paths.length) await sb.storage.from('materials').remove(paths);
         const { error: e2 } = await sb.from('bookings').delete().eq('id', b.id);
         if (e2) { toast(errMsg(e2), true); return; }
         close(); toast('Booking dihapus.'); refreshRoute();
       };
-      if (canUpload) $('#m-up', body).onclick = () => uploadMaterials(b, body);
+      if (canUpload) {
+        $('#m-up', body).onclick = () => uploadMaterials(b, body);
+        $('#m-link', body).onclick = () => addLink(b, body);
+      }
       renderMaterials(b, mats || [], body);
     });
   }
@@ -669,22 +676,22 @@
   async function renderMaterials(b, mats, body) {
     const box = $('#mats', body);
     if (!mats.length) return;
-    const paths = mats.map((m) => m.storage_path);
-    const { data: urls } = await sb.storage.from('materials').createSignedUrls(paths, 3600);
+    const paths = mats.map((m) => m.storage_path).filter(Boolean);
+    const { data: urls } = paths.length ? await sb.storage.from('materials').createSignedUrls(paths, 3600) : { data: [] };
     const urlOf = Object.fromEntries((urls || []).map((u) => [u.path, u.signedUrl]));
     box.innerHTML = mats.map((m) => {
       const url = urlOf[m.storage_path];
-      const isImg = (m.mime || '').startsWith('image/');
+      const isImg = !m.url && (m.mime || '').startsWith('image/');
       const canDel = isAdmin() || m.uploaded_by === S.session.user.id;
       return `<div class="mat">
-        <div class="thumb" ${isImg && url ? `style="background-image:url('${esc(url)}')"` : ''}>${isImg ? '' : esc((m.mime || 'file').split('/')[0].toUpperCase())}</div>
+        <div class="thumb" ${isImg && url ? `style="background-image:url('${esc(url)}')"` : ''}>${isImg ? '' : m.url ? `🔗 ${esc(hostOf(m.url))}` : esc((m.mime || 'file').split('/')[0].toUpperCase())}</div>
         <div class="body"><span class="name">${esc(m.file_name)}</span>
           <span class="muted">${[m.width && m.height ? `${m.width}×${m.height}px` : '', fmtSize(m.size_bytes)].filter(Boolean).join(' · ')}</span>
           <span>${statusBadge(m.status, MSTATUS)}</span>
           ${m.note ? `<span class="muted" style="white-space:pre-wrap">${esc(m.note)}</span>` : ''}
           <span class="muted small">${fmtDT(m.created_at)}</span>
           <div class="acts">
-            <button class="sm" data-dl="${m.id}">Download</button>
+            ${m.url ? `<a class="btn sm" href="${esc(m.url)}" target="_blank" rel="noopener noreferrer">Buka link</a>` : `<button class="sm" data-dl="${m.id}">Download</button>`}
             ${isStaff() && m.status !== 'approved' ? `<button class="sm success" data-mok="${m.id}">OK</button>` : ''}
             ${isStaff() && m.status !== 'revision' ? `<button class="sm danger" data-mrev="${m.id}">Revisi</button>` : ''}
             ${canDel ? `<button class="sm danger" data-mdel="${m.id}" aria-label="Hapus ${esc(m.file_name)}">Hapus</button>` : ''}
@@ -713,12 +720,50 @@
     $$('[data-mdel]', box).forEach((btn) => btn.onclick = async () => {
       const m = byId[btn.dataset.mdel];
       if (!confirm(`Hapus ${m.file_name}?`)) return;
-      const { error: e1 } = await sb.storage.from('materials').remove([m.storage_path]);
-      if (e1) { toast(errMsg(e1), true); return; }
+      if (m.storage_path) {
+        const { error: e1 } = await sb.storage.from('materials').remove([m.storage_path]);
+        if (e1) { toast(errMsg(e1), true); return; }
+      }
       const { error: e2 } = await sb.from('materials').delete().eq('id', m.id);
       if (e2) { toast(errMsg(e2), true); return; }
       closeModal(); openBooking(b.id);
     });
+  }
+
+  function hostOf(u) { try { return new URL(u).hostname.replace(/^www\./, ''); } catch { return 'link'; } }
+
+  async function addLink(b, body) {
+    const raw = $('#m-url', body).value.trim();
+    let u;
+    try { u = new URL(raw); } catch { u = null; }
+    if (!u || !/^https?:$/.test(u.protocol)) { toast('Link tidak valid. Harus diawali https://', true); return; }
+    const { error } = await sb.from('materials').insert({
+      booking_id: b.id, url: u.href, file_name: hostOf(u.href), note: $('#m-note', body).value.trim() || null,
+    });
+    if (error) { toast(errMsg(error), true); return; }
+    toast('Link materi ditambahkan.');
+    closeModal();
+    openBooking(b.id);
+    if ((location.hash || '').startsWith('#booking')) loadBookingList();
+  }
+
+  // Click-to-chat WhatsApp (gratis, tanpa API): membuka WA dengan pesan terisi.
+  function waLink(b, mats) {
+    const appUrl = location.origin + location.pathname + '#booking/' + b.id;
+    const lines = [
+      `*Booking ${b.placement?.name || 'Banner'} PPGOS*`,
+      `Campaign: ${b.campaign}`,
+      `Principal: ${b.principal?.company || ''}${b.principal?.full_name ? ` (${b.principal.full_name})` : ''}`,
+      `Tanggal tayang: ${fmtRange(b.start_date, b.end_date)}`,
+      `Status: ${STATUS[b.status] || b.status}`,
+      `Materi: ${mats.length ? `${mats.length} item` : 'belum ada'}`,
+      ...mats.filter((m) => m.url).map((m) => `- ${m.url}`),
+      '',
+      `Detail: ${appUrl}`,
+    ];
+    const num = String(cfg.WA_TEAM_NUMBER || '').replace(/\D/g, '');
+    const to = role() === 'principal' && num ? num : '';
+    return `https://wa.me/${to}?text=${encodeURIComponent(lines.join('\n'))}`;
   }
 
   function mediaSize(file) {
@@ -1015,7 +1060,13 @@
     renderChrome();
     const route = location.hash.replace('#', '').split('/')[0] || 'kalender';
     renderSelbar();
-    if (route === 'booking') return showBookings();
+    if (route === 'booking') {
+      if (!S.session) { await showCalendar(); authModal('login'); return; }
+      const id = location.hash.split('/')[1];
+      await showBookings();
+      if (id && S.session) openBooking(decodeURIComponent(id));
+      return;
+    }
     if (route === 'admin') return showAdmin();
     return showCalendar();
   }

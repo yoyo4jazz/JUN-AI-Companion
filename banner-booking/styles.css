@@ -50,6 +50,8 @@ button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-
 .primary:hover { background: var(--blue-dark); }
 .danger { color: var(--red); border-color: #f1c3c3; }
 .success { color: var(--green); border-color: #bfe5cf; }
+.wa { color: #128c4a; border-color: #9fdcb8; }
+.wa::before { content: ""; width: 9px; height: 9px; border-radius: 50%; background: #25d366; }
 .ghost-light { background: transparent; color: #fff; border-color: rgba(255,255,255,.5); }
 .ghost-light:hover { border-color: #fff; }
 .sm { padding: 4px 9px; font-size: .85rem; }
