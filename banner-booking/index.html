@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>PPGOS Banner Booking</title>
+<meta name="description" content="Kalender jadwal & booking Pop Up Banner dan Banner PPGOS untuk principal dan tim internal.">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<header class="topbar">
+  <a class="brand" href="#kalender"><span class="brand-mark">P</span><span id="app-name">PPGOS Banner Booking</span></a>
+  <nav id="nav" class="nav"></nav>
+  <div id="userbox" class="userbox"></div>
+</header>
+<div id="notice"></div>
+<main id="app" class="container"><p class="muted">Memuat…</p></main>
+<div id="selbar" class="selbar" hidden></div>
+<div id="modal-root"></div>
+<div id="toast" class="toast" role="status" aria-live="polite"></div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+<script src="config.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
