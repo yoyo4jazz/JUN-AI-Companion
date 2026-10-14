@@ -201,7 +201,12 @@
             }
           }
         } catch (ex) {
-          err.textContent = /invalid login/i.test(errMsg(ex)) ? 'Email atau password salah.' : errMsg(ex);
+          const m = errMsg(ex);
+          err.textContent = /invalid login/i.test(m) ? 'Email atau password salah.'
+            : /email not confirmed/i.test(m) ? 'Email belum dikonfirmasi. Klik link konfirmasi di email Anda, atau minta admin mengonfirmasi akun Anda.'
+            : /rate limit/i.test(m) ? 'Batas kirim email Supabase tercapai (paket gratis hanya beberapa email per jam). Coba lagi nanti, atau minta admin mematikan "Confirm email" di Supabase.'
+            : /already registered/i.test(m) ? 'Email ini sudah terdaftar. Silakan Masuk.'
+            : m;
         } finally { btn.disabled = false; }
       };
     });
