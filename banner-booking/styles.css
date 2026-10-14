@@ -50,6 +50,9 @@ button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-
 .primary:hover { background: var(--blue-dark); }
 .danger { color: var(--red); border-color: #f1c3c3; }
 .success { color: var(--green); border-color: #bfe5cf; }
+.notify { background: #e9f9ef; border: 1px solid #9fdcb8; border-radius: 10px; padding: 12px 14px; margin-bottom: 14px; display: flex; flex-direction: column; gap: 8px; }
+.wa-big { background: #25d366; border-color: #25d366; color: #fff; font-weight: 700; justify-content: center; padding: 11px 16px; }
+.wa-big:hover { background: #1ebe5b; border-color: #1ebe5b; }
 .wa { color: #128c4a; border-color: #9fdcb8; }
 .wa::before { content: ""; width: 9px; height: 9px; border-radius: 50%; background: #25d366; }
 .ghost-light { background: transparent; color: #fff; border-color: rgba(255,255,255,.5); }

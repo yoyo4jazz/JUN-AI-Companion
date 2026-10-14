@@ -12,6 +12,8 @@ lengkap dengan upload materi digital. Web statis (GitHub Pages) + database Supab
 - Status booking: Diajukan → Disetujui → Tayang → Selesai (atau Ditolak / Dibatalkan).
 - **Materi digital**: upload gambar/video per booking (dengan cek format, ukuran file, dan dimensi), **atau tempel link** Google Drive/Dropbox/WeTransfer. Tim internal bisa memberi status *Materi OK* atau *Perlu revisi*.
 - **Tombol WhatsApp** di detail booking membuka WhatsApp dengan pesan ringkasan booking dan link langsung ke detailnya. Fitur ini gratis karena hanya click-to-chat, tanpa API. Isi `WA_TEAM_NUMBER` di `config.js` supaya principal langsung chat ke nomor tim PPGOS.
+- **Setelah booking**, principal langsung melihat tombol hijau **"Kabari Tim PPGOS via WhatsApp"**. Admin dan tim internal melihat jumlah booking yang menunggu persetujuan di menu *Semua Booking*.
+- **(Opsional) Notifikasi WA otomatis** ke HP admin setiap ada booking baru atau akun baru, lewat CallMeBot (gratis). Lihat `supabase/update_02_notif_wa.sql`.
 - **Peran pengguna**:
   - Pengunjung tanpa login hanya melihat ketersediaan slot, tanpa nama principal.
   - Principal hanya melihat booking dan materi miliknya sendiri.
@@ -91,5 +93,6 @@ banner-booking/
 └── supabase/
     ├── schema.sql      # tabel, aturan booking, keamanan (RLS), storage
     ├── update_01_link_materi.sql  # update: materi berupa link
+    ├── update_02_notif_wa.sql     # opsional: notif WA otomatis ke admin (CallMeBot)
     └── seed_2026.sql   # placement + libur nasional & event PPGOS 2026
 ```

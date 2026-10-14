@@ -97,6 +97,7 @@
     bookings: [],         // booking dalam bulan tampil (sesuai hak akses)
     principals: null,
     pendingUsers: 0,
+    pendingBookings: 0,
   };
   const role = () => S.profile?.role || (S.session ? 'pending' : 'anon');
   const isStaff = () => ['internal', 'admin'].includes(role());
@@ -114,13 +115,23 @@
       const { count } = await sb.from('profiles').select('id', { count: 'exact', head: true }).eq('role', 'pending');
       S.pendingUsers = count || 0;
     }
+    await loadPendingBookings();
+  }
+
+  async function loadPendingBookings() {
+    S.pendingBookings = 0;
+    if (!isStaff()) return;
+    const { count } = await sb.from('bookings').select('id', { count: 'exact', head: true }).eq('status', 'pending');
+    S.pendingBookings = count || 0;
   }
 
   function renderChrome() {
     const r = role();
     const route = location.hash.replace('#', '').split('/')[0] || 'kalender';
     const links = [['kalender', 'Kalender']];
-    if (canBook()) links.push(['booking', isStaff() ? 'Semua Booking' : 'Booking Saya']);
+    if (canBook()) links.push(['booking', isStaff()
+      ? `Semua Booking${S.pendingBookings ? ` <span class="badge-count" title="Menunggu persetujuan">${S.pendingBookings}</span>` : ''}`
+      : 'Booking Saya']);
     if (isAdmin()) links.push(['admin', `Admin${S.pendingUsers ? ` <span class="badge-count">${S.pendingUsers}</span>` : ''}`]);
     $('#nav').innerHTML = links.map(([h, t]) => `<a href="#${h}" class="${route === h ? 'active' : ''}">${t}</a>`).join('');
     const ub = $('#userbox');
@@ -503,7 +514,7 @@
         S.sel = null;
         toast('Booking berhasil dibuat.');
         await showCalendar();
-        openBooking(data.id);
+        openBooking(data.id, { justCreated: true });
       };
     });
   }
@@ -586,7 +597,7 @@
   }
 
   // ------------------------------------------------------------------ booking detail
-  async function openBooking(id) {
+  async function openBooking(id, opts = {}) {
     const { data: b, error } = await sb.from('bookings').select(BK_SELECT).eq('id', id).maybeSingle();
     if (error || !b) { toast(error ? errMsg(error) : 'Booking tidak ditemukan.', true); return; }
     const { data: mats } = await sb.from('materials').select('*').eq('booking_id', id).order('created_at', { ascending: false });
@@ -604,7 +615,10 @@
       acts.push(['cancelled', 'Batalkan booking', 'danger']);
     }
 
-    openModal(b.campaign, `
+    const notifyBox = opts.justCreated && !isStaff() ? `<div class="notify">
+        <b>Booking terkirim ✅</b> Slot sudah dikunci untuk Anda. Langkah terakhir: kabari tim PPGOS supaya segera direview.
+        <a class="btn wa-big" target="_blank" rel="noopener" href="${esc(waLink(b, mats || []))}">Kabari Tim PPGOS via WhatsApp</a></div>` : '';
+    openModal(b.campaign, `${notifyBox}
       <dl class="kv">
         <dt>Status</dt><dd>${statusBadge(b.status)}</dd>
         <dt>Placement</dt><dd>${placeTag(p)}</dd>
@@ -669,6 +683,7 @@
     if (error) { toast(errMsg(error), true); return; }
     close();
     toast(`Status: ${STATUS[status]}`);
+    await loadPendingBookings();
     refreshRoute();
     openBooking(b.id);
   }
