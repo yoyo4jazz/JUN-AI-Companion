@@ -1,0 +1,14 @@
+{
+  "name": "Riri Hologram",
+  "short_name": "Riri",
+  "description": "Asisten virtual hologram untuk diskusi suara berbahasa Indonesia.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#050816",
+  "theme_color": "#050816",
+  "icons": [
+    { "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }
+  ]
+}
