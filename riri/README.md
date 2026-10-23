@@ -6,11 +6,20 @@ Memakai backend yang sama dengan Jun (`cloudflare/worker.js`), dengan persona `r
 Alamat: https://yoyo4jazz.github.io/JUN-AI-Companion/riri/
 
 ## Yang perlu dilakukan sekali saja
-1. **Deploy ulang Worker** supaya persona Riri aktif: `cd cloudflare && npx wrangler deploy`.
-   Tanpa langkah ini Riri tetap jalan, tetapi memakai kepribadian Jun dan transkrip ucapanmu tidak muncul.
-2. Buka halaman Riri → ⚙️ Pengaturan → isi alamat backend (`https://...workers.dev`). Kalau alamat Jun sudah tersimpan di perangkat ini, terisi otomatis.
+
+### Mode mudah (tanpa Cloudflare)
+1. Di platform.openai.com: isi saldo (Billing), pasang batas bulanan (Limits), lalu buat kunci (API keys → Create new secret key).
+2. Buka Riri → ⚙️ Pengaturan → tempel kunci `sk-...` di kolom **Mode mudah** → Simpan.
 3. Ketuk Riri sekali dan izinkan mikrofon.
-4. Menu browser → **Tambahkan ke layar utama** supaya Riri bisa dibuka seperti aplikasi.
+4. Menu browser → **Tambahkan ke layar utama**.
+
+Kunci tersimpan hanya di browser perangkat ini dan dikirim langsung ke OpenAI.
+Risikonya: siapa pun yang memegang tablet ini bisa mengambil kunci tersebut. Batas bulanan di OpenAI adalah pengamannya.
+
+### Mode backend (lebih aman, opsional)
+Kunci disimpan di Cloudflare Worker (`cloudflare/worker.js`), bukan di tablet.
+Buat Worker, tempel kodenya, tambahkan secret `OPENAI_API_KEY`, lalu isi alamat `https://...workers.dev` di Pengaturan Riri.
+Kalau alamat backend diisi, Riri memakai backend dan mengabaikan kunci di tablet.
 
 Setelah itu: setiap kali Riri dibuka, dia langsung aktif, menyapa sesuai waktu, dan membuka topik diskusi sendiri.
 
