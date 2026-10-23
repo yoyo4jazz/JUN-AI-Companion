@@ -1,0 +1,295 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#050816">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icon.svg">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>Riri Hologram</title>
+<style>
+:root{--holo:#6ff3ff;--holo2:#b58cff;--bg:#050816;--panel:#0c1430cc;--text:#e8fbff;--muted:#8fb4c4}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{margin:0;background:radial-gradient(ellipse at 50% 85%,#0d2a44 0,var(--bg) 60%);color:var(--text);font:16px/1.45 system-ui,sans-serif;overflow-x:hidden}
+main{max-width:1100px;margin:auto;padding:14px 16px 24px;display:grid;gap:16px;grid-template-columns:1fr}
+@media(min-width:880px){main{grid-template-columns:1.1fr .9fr;align-items:start}}
+header{display:flex;align-items:center;justify-content:space-between;gap:8px}
+h1{margin:0;font-size:22px;letter-spacing:.12em;color:var(--holo);text-shadow:0 0 12px var(--holo)}
+.pill{font-size:13px;padding:5px 11px;border-radius:99px;border:1px solid #6ff3ff55;color:var(--muted)}
+.pill.on{color:#03131a;background:var(--holo);border-color:var(--holo)}
+
+/* ---------- hologram stage ---------- */
+.stage{position:relative;height:clamp(380px,64vh,620px);border-radius:26px;overflow:hidden;cursor:pointer;
+ background:radial-gradient(ellipse at 50% 100%,#0e3b5a88,transparent 60%),#040a18;border:1px solid #6ff3ff22}
+.beam{position:absolute;left:50%;bottom:34px;width:78%;height:92%;transform:translateX(-50%);
+ clip-path:polygon(44% 100%,56% 100%,100% 0,0 0);background:linear-gradient(to top,#6ff3ff55,#6ff3ff08 75%,transparent);
+ filter:blur(6px);opacity:.55;animation:beam 3.2s ease-in-out infinite}
+.base{position:absolute;left:50%;bottom:18px;width:min(240px,55%);height:34px;transform:translateX(-50%);border-radius:50%;
+ background:radial-gradient(ellipse,#bff9ff 0,#6ff3ff 25%,#0b4f6b 60%,transparent 72%);box-shadow:0 0 40px #6ff3ff88}
+.holo{position:absolute;left:50%;bottom:44px;height:86%;aspect-ratio:3/4;transform:translateX(-50%);
+ animation:float 6s ease-in-out infinite,flicker 7s steps(1) infinite;transition:opacity .6s,filter .6s}
+.holo svg{width:100%;height:100%;overflow:visible;filter:drop-shadow(0 0 6px var(--holo)) drop-shadow(0 0 18px #6ff3ff66)}
+.scan{position:absolute;inset:0;pointer-events:none;mix-blend-mode:screen;
+ background:repeating-linear-gradient(to bottom,#6ff3ff14 0 2px,transparent 2px 5px);animation:scan 9s linear infinite}
+.glitch{position:absolute;inset:0;pointer-events:none;background:linear-gradient(to bottom,transparent 48%,#6ff3ff30 50%,transparent 52%);
+ background-size:100% 220%;animation:sweep 4.5s linear infinite}
+.ring{position:absolute;left:50%;bottom:20px;width:min(260px,60%);height:40px;transform:translateX(-50%);border-radius:50%;
+ border:2px solid var(--holo);opacity:0}
+.stage.listening .ring{animation:ring 1.8s ease-out infinite}
+.stage.off .holo{opacity:.28;filter:saturate(.3)}
+.stage.booting .holo{animation:boot 1.6s ease-out both}
+.stage.talking .holo svg{filter:drop-shadow(0 0 9px var(--holo)) drop-shadow(0 0 30px #b58cffaa)}
+.stage.talking.cssmouth #mouth{animation:talk .22s ease-in-out infinite alternate}
+#eyes{transform-origin:150px 150px;animation:blink 5s infinite}
+#mouth{transform-origin:150px 196px;transform-box:view-box}
+.bubble{position:absolute;left:16px;right:16px;top:16px;margin:auto;max-width:560px;padding:12px 16px;border-radius:18px;
+ background:var(--panel);border:1px solid #6ff3ff44;backdrop-filter:blur(6px);font-size:15px;text-align:center;min-height:46px}
+.tap{position:absolute;left:0;right:0;bottom:70px;text-align:center;color:var(--holo);font-size:15px;letter-spacing:.06em;
+ text-shadow:0 0 10px var(--holo);animation:pulse 2s ease-in-out infinite}
+.stage:not(.off) .tap{display:none}
+
+@keyframes float{50%{transform:translateX(-50%) translateY(-10px)}}
+@keyframes flicker{0%,100%{opacity:.92}41%{opacity:.6}42%{opacity:.95}77%{opacity:.75}78%{opacity:.93}}
+@keyframes beam{50%{opacity:.8}}
+@keyframes scan{to{background-position:0 200px}}
+@keyframes sweep{from{background-position:0 120%}to{background-position:0 -120%}}
+@keyframes ring{from{transform:translateX(-50%) scale(.7);opacity:.9}to{transform:translateX(-50%) scale(1.6);opacity:0}}
+@keyframes boot{0%{clip-path:inset(100% 0 0 0);opacity:0}60%{opacity:1}100%{clip-path:inset(0 0 0 0)}}
+@keyframes blink{0%,94%,100%{transform:scaleY(1)}96%{transform:scaleY(.1)}}
+@keyframes talk{from{transform:scaleY(.4)}to{transform:scaleY(2.4)}}
+@keyframes pulse{50%{opacity:.45}}
+@media(prefers-reduced-motion:reduce){.holo,.beam,.scan,.glitch,.tap,#eyes{animation:none!important}}
+
+/* ---------- panel ---------- */
+.panel{background:var(--panel);border:1px solid #6ff3ff22;border-radius:22px;padding:14px;display:flex;flex-direction:column;gap:12px}
+.controls{display:flex;flex-wrap:wrap;gap:8px}
+button{background:#0f2f45;border:1px solid #6ff3ff66;color:var(--text);padding:11px 16px;border-radius:14px;font-size:15px;cursor:pointer}
+button.primary{background:linear-gradient(135deg,#1aa7c4,#7b4fd6);border-color:transparent}
+button:disabled{opacity:.45;cursor:default}
+button:focus-visible,input:focus-visible,summary:focus-visible{outline:3px solid #fff;outline-offset:2px}
+#chat{list-style:none;margin:0;padding:0;max-height:min(46vh,430px);overflow-y:auto;display:flex;flex-direction:column;gap:8px}
+#chat li{padding:9px 13px;border-radius:15px;max-width:88%;white-space:pre-wrap;word-wrap:break-word}
+#chat .u{align-self:flex-end;background:#2a1f4d}
+#chat .a{align-self:flex-start;background:#0d3346;border:1px solid #6ff3ff33}
+#chat .s{align-self:center;color:var(--muted);font-size:13px;background:none}
+form{display:flex;gap:8px}
+input[type=text],input[type=url],input[type=number]{flex:1;min-width:0;background:#040a18;color:var(--text);border:1px solid #6ff3ff44;padding:11px 12px;border-radius:12px;font-size:16px}
+details{border-top:1px solid #6ff3ff22;padding-top:10px}
+summary{cursor:pointer;color:var(--muted)}
+.set{display:grid;gap:10px;margin-top:10px}
+.set label{display:flex;align-items:center;gap:8px;flex-wrap:wrap;color:var(--muted);font-size:14px}
+.note{color:var(--muted);font-size:13px;margin:0}
+</style>
+</head>
+<body>
+<main>
+<section>
+ <header><h1>R I R I</h1><span class="pill" id="pill">offline</span></header>
+ <div class="stage off" id="stage" role="button" tabindex="0" aria-label="Ketuk untuk mengaktifkan atau menonaktifkan Riri">
+  <div class="beam"></div>
+  <div class="holo" id="holo" aria-hidden="true">
+   <svg viewBox="0 0 300 400">
+    <defs>
+     <linearGradient id="g" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#9ff8ff" stop-opacity=".75"/>
+      <stop offset=".55" stop-color="#6ff3ff" stop-opacity=".35"/>
+      <stop offset="1" stop-color="#b58cff" stop-opacity=".08"/>
+     </linearGradient>
+     <linearGradient id="hair" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#c7a6ff" stop-opacity=".7"/>
+      <stop offset="1" stop-color="#6ff3ff" stop-opacity=".1"/>
+     </linearGradient>
+    </defs>
+    <g stroke="#9ff8ff" stroke-width="1.6" stroke-linejoin="round">
+     <!-- rambut belakang -->
+     <path fill="url(#hair)" stroke="none" d="M150 52c-58 0-84 44-82 98 2 46-6 92-26 132 30 6 58-4 72-24-6-30-8-60-6-90h84c2 30 0 60-6 90 14 20 42 30 72 24-20-40-28-86-26-132 2-54-24-98-82-98z"/>
+     <!-- badan -->
+     <path fill="url(#g)" d="M132 222h36l4 22c40 8 70 24 82 56l14 100H32l14-100c12-32 42-48 82-56z"/>
+     <path fill="none" stroke-opacity=".6" d="M110 262c14 18 66 18 80 0M150 250v150"/>
+     <!-- leher & wajah -->
+     <path fill="url(#g)" d="M136 207v23c8 6 20 6 28 0v-23"/>
+     <ellipse fill="url(#g)" cx="150" cy="148" rx="50" ry="62"/>
+     <!-- poni -->
+     <path fill="url(#hair)" d="M98 140c-2-46 22-74 52-74s56 26 54 72c-14-10-26-26-30-44-12 18-40 30-76 46z"/>
+     <!-- mata -->
+     <g id="eyes" fill="#e8fdff" stroke="none">
+      <ellipse cx="130" cy="152" rx="7" ry="9"/><ellipse cx="170" cy="152" rx="7" ry="9"/>
+      <circle cx="132" cy="149" r="2.4" fill="#05343f"/><circle cx="172" cy="149" r="2.4" fill="#05343f"/>
+     </g>
+     <path fill="none" stroke-opacity=".7" d="M120 138q10-6 20 0M160 138q10-6 20 0"/>
+     <!-- mulut -->
+     <ellipse id="mouth" cx="150" cy="186" rx="9" ry="2.2" fill="#ffd6f4" fill-opacity=".85" stroke="none"/>
+     <!-- aksen hologram -->
+     <circle cx="150" cy="292" r="7" fill="none" stroke="#b58cff"/>
+     <path fill="none" stroke="#b58cff" stroke-opacity=".7" d="M60 330h40M200 330h40M70 350h20M210 350h20"/>
+    </g>
+   </svg>
+  </div>
+  <div class="scan"></div><div class="glitch"></div>
+  <div class="ring"></div><div class="base"></div>
+  <div class="bubble" id="bubble" role="status" aria-live="polite">Halo, aku Riri.</div>
+  <div class="tap">✦ ketuk untuk mengaktifkan Riri ✦</div>
+ </div>
+</section>
+
+<section class="panel">
+ <div class="controls">
+  <button class="primary" id="toggle">✦ Aktifkan Riri</button>
+  <button id="mute" disabled>🎙️ Mic aktif</button>
+  <button id="topic" disabled>💡 Riri, buka topik</button>
+ </div>
+ <ul id="chat" aria-label="Percakapan dengan Riri"></ul>
+ <form id="form" autocomplete="off">
+  <input type="text" id="text" placeholder="Ketik pesan untuk Riri…" aria-label="Pesan untuk Riri" maxlength="2000">
+  <button type="submit">Kirim</button>
+ </form>
+ <details id="settings">
+  <summary>⚙️ Pengaturan</summary>
+  <div class="set">
+   <label for="backend">Alamat backend HTTPS (sama dengan Jun):</label>
+   <form id="saveForm"><input type="url" id="backend" placeholder="https://jun-ai-backend.xxx.workers.dev" autocomplete="url"><button type="submit">Simpan</button></form>
+   <label><input type="checkbox" id="auto"> Aktif otomatis setiap Riri dibuka</label>
+   <label><input type="checkbox" id="remember"> Riri ingat obrolan terakhir (tersimpan di perangkat ini)</label>
+   <label>Matikan otomatis jika diam selama <input type="number" id="idle" min="1" max="60" style="width:84px;flex:none"> menit</label>
+   <div class="controls"><button type="button" id="forget">🗑️ Hapus ingatan Riri</button><button type="button" id="micTest">🎤 Uji mikrofon</button></div>
+   <p class="note">Jangan masukkan API key di sini. Selama Riri aktif, sesi AI berjalan dan memakai kuota OpenAI, makanya ada mati otomatis saat diam. Pasang ke layar utama lewat menu browser → "Tambahkan ke layar utama" supaya Riri bisa dibuka seperti aplikasi.</p>
+  </div>
+ </details>
+</section>
+<audio id="remote" autoplay playsinline></audio>
+</main>
+
+<script>
+const $=id=>document.getElementById(id);
+const store={get(k,d){try{const v=localStorage.getItem(k);return v===null?d:JSON.parse(v)}catch{return d}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch{}}};
+const stage=$('stage'),remote=$('remote'),chat=$('chat');
+let pc,stream,dc,audioCtx,analyser,raf,idleTimer,connecting=false,micOn=true,live=null;
+
+// ---- pengaturan: pakai backend Jun bila Riri belum punya sendiri ----
+const legacy=(()=>{try{return localStorage.getItem('jun_backend')||''}catch{return ''}})();
+$('backend').value=store.get('riri_backend',legacy);
+$('auto').checked=store.get('riri_auto',true);
+$('remember').checked=store.get('riri_remember',true);
+$('idle').value=store.get('riri_idle',5);
+$('auto').onchange=e=>store.set('riri_auto',e.target.checked);
+$('remember').onchange=e=>store.set('riri_remember',e.target.checked);
+$('idle').onchange=e=>store.set('riri_idle',Math.min(60,Math.max(1,+e.target.value||5)));
+$('saveForm').onsubmit=e=>{e.preventDefault();const s=$('backend').value.trim().replace(/\/$/,'');
+ if(s&&!/^https:\/\//.test(s))return say('Alamat backend wajib diawali https://');store.set('riri_backend',s);say('Alamat backend tersimpan. Ketuk aku untuk mulai ✦')};
+$('forget').onclick=()=>{store.set('riri_memory',[]);chat.innerHTML='';add('s','Ingatan Riri sudah dihapus.')};
+$('micTest').onclick=async()=>{try{const s=await navigator.mediaDevices.getUserMedia({audio:true});s.getTracks().forEach(t=>t.stop());say('Mikrofon berfungsi 🎤')}catch(e){say('Mikrofon gagal: '+e.name)}};
+
+// ---- tampilan ----
+function say(t){$('bubble').textContent=t}
+function setState(s){stage.classList.remove('off','listening','talking');if(s)stage.classList.add(s);
+ const p=$('pill');p.textContent={off:'offline',listening:'mendengarkan',talking:'berbicara'}[s]||'terhubung';p.classList.toggle('on',s!=='off')}
+function add(role,text){const li=document.createElement('li');li.className=role;li.textContent=text;chat.appendChild(li);chat.scrollTop=chat.scrollHeight;return li}
+function remember(role,text){if(!$('remember').checked||!text)return;const m=store.get('riri_memory',[]);m.push({r:role,t:text.slice(0,400)});store.set('riri_memory',m.slice(-16))}
+function greeting(){const h=new Date().getHours();return h<11?'Selamat pagi':h<15?'Selamat siang':h<18?'Selamat sore':'Selamat malam'}
+
+// ---- mulut mengikuti volume suara Riri ----
+function lipSync(mediaStream){
+ try{
+  audioCtx=audioCtx||new (window.AudioContext||window.webkitAudioContext)();
+  if(audioCtx.state!=='running'){audioCtx.resume().catch(()=>{})}
+  const src=audioCtx.createMediaStreamSource(mediaStream);analyser=audioCtx.createAnalyser();analyser.fftSize=512;src.connect(analyser);
+  const buf=new Uint8Array(analyser.fftSize),mouth=$('mouth');
+  const tick=()=>{if(!analyser)return;analyser.getByteTimeDomainData(buf);let sum=0;for(const v of buf){const x=(v-128)/128;sum+=x*x}
+   const level=Math.min(1,Math.sqrt(sum/buf.length)*6);
+   if(audioCtx.state==='running'){stage.classList.remove('cssmouth');mouth.setAttribute('ry',(2.2+level*9).toFixed(1))}else stage.classList.add('cssmouth');
+   raf=requestAnimationFrame(tick)};
+  tick();
+ }catch{stage.classList.add('cssmouth')}
+}
+
+// ---- mati otomatis saat diam, supaya kuota tidak habis ----
+function bump(){clearTimeout(idleTimer);idleTimer=setTimeout(()=>{if(pc){add('s','Riri istirahat karena tidak ada obrolan. Ketuk untuk memanggil lagi.');stop('Aku istirahat dulu ya. Ketuk aku kalau mau ngobrol lagi ✦')}},store.get('riri_idle',5)*60000)}
+
+function send(obj){if(dc&&dc.readyState==='open')dc.send(JSON.stringify(obj))}
+
+function onEvent(v){
+ switch(v.type){
+  case 'input_audio_buffer.speech_started':setState('listening');say('Aku dengerin…');bump();break;
+  case 'response.created':setState('talking');bump();break;
+  case 'response.output_audio_transcript.delta':case 'response.audio_transcript.delta':
+   if(!live)live=add('a','');live.textContent+=v.delta||'';chat.scrollTop=chat.scrollHeight;say(live.textContent.slice(-160));break;
+  case 'response.output_audio_transcript.done':case 'response.audio_transcript.done':
+   if(live){live.textContent=v.transcript||live.textContent;remember('a',live.textContent)}live=null;break;
+  case 'conversation.item.input_audio_transcription.completed':
+   if(v.transcript&&v.transcript.trim()){const li=add('u',v.transcript.trim());if(live)chat.insertBefore(li,live);remember('u',v.transcript.trim())}break;
+  case 'response.done':setState('listening');say('Aku dengerin. Ngomong aja ✦');bump();break;
+  case 'error':add('s','AI error: '+(v.error?.message||'tidak diketahui'));break;
+ }
+}
+
+async function start(){
+ if(pc||connecting)return;
+ const base=(store.get('riri_backend','')||$('backend').value).trim().replace(/\/$/,'');
+ if(!/^https:\/\//.test(base)){$('settings').open=true;say('Aku belum punya alamat backend. Isi dulu di Pengaturan ya (sama dengan alamat backend Jun).');return}
+ connecting=true;stage.classList.add('booting');setState('booting');$('toggle').disabled=true;say('Menyalakan proyektor hologram…');
+ try{
+  stream=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:true,noiseSuppression:true,autoGainControl:true}});
+  pc=new RTCPeerConnection();
+  stream.getTracks().forEach(t=>pc.addTrack(t,stream));
+  pc.ontrack=e=>{remote.srcObject=e.streams[0];remote.play().catch(()=>say('Ketuk layar sekali supaya suaraku terdengar.'));lipSync(e.streams[0])};
+  pc.onconnectionstatechange=()=>{if(['failed','disconnected'].includes(pc?.connectionState))stop('Koneksi terputus. Ketuk aku untuk menyambung lagi.')};
+  dc=pc.createDataChannel('oai-events');
+  dc.onmessage=e=>{try{onEvent(JSON.parse(e.data))}catch{}};
+  dc.onopen=()=>{
+   const mem=$('remember').checked?store.get('riri_memory',[]):[];
+   if(mem.length)send({type:'conversation.item.create',item:{type:'message',role:'system',content:[{type:'input_text',text:'Cuplikan obrolan terakhir dengan pengguna (untuk konteks, jangan dibacakan ulang):\n'+mem.map(m=>(m.r==='u'?'Pengguna: ':'Riri: ')+m.t).join('\n')}]}});
+   send({type:'response.create',response:{instructions:`Sapa pengguna dengan "${greeting()}" secara singkat dan hangat sebagai Riri. `+(mem.length?'Singgung sedikit topik terakhir kalian lalu tanya mau lanjut atau bahas hal lain.':'Perkenalkan diri satu kalimat, lalu tawarkan satu topik diskusi yang menarik dan tanyakan pendapat pengguna.')}});
+   setState('listening');$('mute').disabled=$('topic').disabled=false;$('toggle').disabled=false;$('toggle').textContent='⏻ Matikan Riri';bump();
+  };
+  const offer=await pc.createOffer();await pc.setLocalDescription(offer);
+  say('Menghubungkan ke otak Riri…');
+  const r=await fetch(base+'/session',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({sdp:offer.sdp,persona:'riri'})});
+  if(!r.ok){const t=await r.text();throw new Error('backend '+r.status+': '+t.slice(0,160))}
+  await pc.setRemoteDescription({type:'answer',sdp:await r.text()});
+ }catch(e){
+  const msg=e.name==='NotAllowedError'?'Aku butuh izin mikrofon. Izinkan di pengaturan browser, lalu ketuk aku lagi.':'Gagal tersambung: '+e.message;
+  stop(msg);
+ }finally{connecting=false;stage.classList.remove('booting')}
+}
+
+function stop(msg){
+ clearTimeout(idleTimer);cancelAnimationFrame(raf);analyser=null;
+ try{dc&&dc.close()}catch{};try{pc&&pc.close()}catch{};stream&&stream.getTracks().forEach(t=>t.stop());
+ remote.srcObject=null;pc=dc=stream=null;live=null;micOn=true;
+ $('mouth').setAttribute('ry','2.2');setState('off');
+ $('toggle').disabled=false;$('toggle').textContent='✦ Aktifkan Riri';$('mute').disabled=$('topic').disabled=true;$('mute').textContent='🎙️ Mic aktif';
+ say(msg||'Riri istirahat. Ketuk aku kapan saja ✦');
+}
+
+const toggle=()=>pc?stop():start();
+$('toggle').onclick=toggle;
+stage.onclick=toggle;
+stage.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();toggle()}};
+$('mute').onclick=()=>{micOn=!micOn;stream&&stream.getAudioTracks().forEach(t=>t.enabled=micOn);$('mute').textContent=micOn?'🎙️ Mic aktif':'🔇 Mic mati'};
+$('topic').onclick=()=>{send({type:'response.create',response:{instructions:'Buka satu topik diskusi baru yang menarik dan relevan, sampaikan pendapat singkatmu, lalu tanyakan pendapat pengguna.'}});bump()};
+$('form').onsubmit=async e=>{
+ e.preventDefault();const t=$('text').value.trim();if(!t)return;
+ if(!pc){await start();if(!pc)return}
+ const go=()=>{add('u',t);remember('u',t);send({type:'conversation.item.create',item:{type:'message',role:'user',content:[{type:'input_text',text:t}]}});send({type:'response.create'});bump()};
+ $('text').value='';
+ if(dc.readyState==='open')go();else dc.addEventListener('open',()=>setTimeout(go,300),{once:true});
+};
+document.addEventListener('visibilitychange',()=>{if(document.hidden&&pc)stop('Riri istirahat karena aplikasi ditutup.')});
+
+// ---- saat dibuka: tampilkan ingatan, sapa, dan aktif otomatis jika bisa ----
+(async()=>{
+ const mem=$('remember').checked?store.get('riri_memory',[]):[];
+ if(mem.length){add('s','— obrolan terakhir —');mem.slice(-6).forEach(m=>add(m.r,m.t));add('s','—')}
+ say(`${greeting()}! Aku Riri ✦ Ketuk aku untuk mulai ngobrol.`);
+ if(!$('auto').checked||!store.get('riri_backend',legacy))return;
+ let granted=false;
+ try{granted=(await navigator.permissions.query({name:'microphone'})).state==='granted'}catch{}
+ if(granted)start();
+ else say(`${greeting()}! Aku Riri ✦ Ketuk aku sekali untuk izinkan mikrofon. Setelah itu aku akan langsung aktif tiap kamu buka.`);
+})();
+</script>
+</body>
+</html>
