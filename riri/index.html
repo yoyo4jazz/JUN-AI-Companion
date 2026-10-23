@@ -43,8 +43,8 @@ h1{margin:0;font-size:22px;letter-spacing:.12em;color:var(--holo);text-shadow:0 
 .stage.booting .holo{animation:boot 1.6s ease-out both}
 .stage.talking .holo svg{filter:drop-shadow(0 0 9px var(--holo)) drop-shadow(0 0 30px #b58cffaa)}
 .stage.talking.cssmouth #mouth{animation:talk .22s ease-in-out infinite alternate}
-#eyes{transform-origin:150px 150px;animation:blink 5s infinite}
-#mouth{transform-origin:150px 196px;transform-box:view-box}
+#eyes{transform-origin:150px 149px;transform-box:view-box;animation:blink 5s infinite}
+#mouth{transform-origin:150px 188px;transform-box:view-box}
 .bubble{position:absolute;left:16px;right:16px;top:16px;margin:auto;max-width:560px;padding:12px 16px;border-radius:18px;
  background:var(--panel);border:1px solid #6ff3ff44;backdrop-filter:blur(6px);font-size:15px;text-align:center;min-height:46px}
 .tap{position:absolute;left:0;right:0;bottom:70px;text-align:center;color:var(--holo);font-size:15px;letter-spacing:.06em;
@@ -94,37 +94,57 @@ summary{cursor:pointer;color:var(--muted)}
    <svg viewBox="0 0 300 400">
     <defs>
      <linearGradient id="g" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0" stop-color="#9ff8ff" stop-opacity=".75"/>
-      <stop offset=".55" stop-color="#6ff3ff" stop-opacity=".35"/>
-      <stop offset="1" stop-color="#b58cff" stop-opacity=".08"/>
+      <stop offset="0" stop-color="#d9fbff" stop-opacity=".7"/>
+      <stop offset=".6" stop-color="#8ff4ff" stop-opacity=".35"/>
+      <stop offset="1" stop-color="#b58cff" stop-opacity=".1"/>
      </linearGradient>
      <linearGradient id="hair" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0" stop-color="#c7a6ff" stop-opacity=".7"/>
-      <stop offset="1" stop-color="#6ff3ff" stop-opacity=".1"/>
+      <stop offset="0" stop-color="#fff6dc" stop-opacity=".85"/>
+      <stop offset=".5" stop-color="#ffe9c7" stop-opacity=".5"/>
+      <stop offset="1" stop-color="#f3c9ff" stop-opacity=".12"/>
+     </linearGradient>
+     <linearGradient id="dress" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#c9a6ff" stop-opacity=".6"/>
+      <stop offset="1" stop-color="#6ff3ff" stop-opacity=".08"/>
      </linearGradient>
     </defs>
-    <g stroke="#9ff8ff" stroke-width="1.6" stroke-linejoin="round">
-     <!-- rambut belakang -->
-     <path fill="url(#hair)" stroke="none" d="M150 52c-58 0-84 44-82 98 2 46-6 92-26 132 30 6 58-4 72-24-6-30-8-60-6-90h84c2 30 0 60-6 90 14 20 42 30 72 24-20-40-28-86-26-132 2-54-24-98-82-98z"/>
-     <!-- badan -->
-     <path fill="url(#g)" d="M132 222h36l4 22c40 8 70 24 82 56l14 100H32l14-100c12-32 42-48 82-56z"/>
-     <path fill="none" stroke-opacity=".6" d="M110 262c14 18 66 18 80 0M150 250v150"/>
-     <!-- leher & wajah -->
-     <path fill="url(#g)" d="M136 207v23c8 6 20 6 28 0v-23"/>
-     <ellipse fill="url(#g)" cx="150" cy="148" rx="50" ry="62"/>
-     <!-- poni -->
-     <path fill="url(#hair)" d="M98 140c-2-46 22-74 52-74s56 26 54 72c-14-10-26-26-30-44-12 18-40 30-76 46z"/>
-     <!-- mata -->
-     <g id="eyes" fill="#e8fdff" stroke="none">
-      <ellipse cx="130" cy="152" rx="7" ry="9"/><ellipse cx="170" cy="152" rx="7" ry="9"/>
-      <circle cx="132" cy="149" r="2.4" fill="#05343f"/><circle cx="172" cy="149" r="2.4" fill="#05343f"/>
+    <g stroke="#bff9ff" stroke-width="1.4" stroke-linejoin="round" stroke-linecap="round">
+     <!-- rambut panjang belakang, platinum bergelombang -->
+     <path fill="url(#hair)" stroke="none" d="M150 54C92 54 74 100 78 150c3 44-12 74-4 114 6 30-8 50 4 78 18 10 36-2 40-24h64c4 22 22 34 40 24 12-28-2-48 4-78 8-40-7-70-4-114 4-50-14-96-72-96z"/>
+     <!-- bahu terbuka -->
+     <path fill="url(#g)" d="M54 304c8-30 40-50 82-62h28c42 12 74 32 82 62z"/>
+     <!-- atasan off-shoulder dengan lengan puff -->
+     <path fill="url(#dress)" stroke="#d9c2ff" d="M70 300c26-6 52-8 80-8s54 2 80 8c4 30 10 64 14 100H56c4-36 10-70 14-100z"/>
+     <ellipse fill="url(#dress)" stroke="#d9c2ff" cx="56" cy="306" rx="28" ry="22"/>
+     <ellipse fill="url(#dress)" stroke="#d9c2ff" cx="244" cy="306" rx="28" ry="22"/>
+     <path fill="none" stroke="#d9c2ff" stroke-opacity=".6" d="M80 300c10 8 22 12 36 12M184 312c14 0 26-4 36-12M96 346q54 16 108 0"/>
+     <!-- leher & choker -->
+     <path fill="url(#g)" d="M137 204v34c8 6 18 6 26 0v-34"/>
+     <rect x="136" y="220" width="28" height="5" rx="2.5" fill="#b58cff" stroke="#e5d4ff"/>
+     <!-- wajah tirus -->
+     <path fill="url(#g)" d="M106 138c0-46 88-46 88 0 0 40-22 68-44 74-22-6-44-34-44-74z"/>
+     <!-- rambut depan: belahan tengah & helai di depan bahu -->
+     <path fill="url(#hair)" stroke="#fff3d6" stroke-opacity=".7" d="M150 64c-36 0-54 26-52 70l4 12c4-34 22-56 48-66 26 10 44 32 48 66l4-12c2-44-16-70-52-70z"/>
+     <path fill="url(#hair)" stroke="#fff3d6" stroke-opacity=".6" d="M104 140c-8 46 4 76-6 112-6 24 4 44-4 66 14-4 22-20 22-38 2-40-8-84 0-128z"/>
+     <path fill="url(#hair)" stroke="#fff3d6" stroke-opacity=".6" d="M196 140c8 46-4 76 6 112 6 24-4 44 4 66-14-4-22-20-22-38-2-40 8-84 0-128z"/>
+     <path fill="none" stroke="#fff3d6" stroke-opacity=".45" d="M150 70v14M92 190c6 20-4 36 2 56M208 190c-6 20 4 36-2 56M86 270c6 14 0 30 6 44M214 270c-6 14 0 30-6 44"/>
+     <!-- alis tipis -->
+     <path fill="none" stroke-opacity=".8" d="M119 134q11-6 23-2M158 132q12-4 23 2"/>
+     <!-- mata almond + eyeliner bersayap -->
+     <g id="eyes">
+      <path fill="#eafdff" stroke="none" d="M118 151q13-15 27-2q-13 11-27 2zM155 149q14-13 27 2q-14 9-27-2z"/>
+      <circle cx="132" cy="149" r="4.6" fill="#1a3b55" stroke="none"/><circle cx="168" cy="149" r="4.6" fill="#1a3b55" stroke="none"/>
+      <circle cx="133.2" cy="147.8" r="1.1" fill="#fff" stroke="none"/><circle cx="169.2" cy="147.8" r="1.1" fill="#fff" stroke="none"/>
+      <path fill="none" stroke="#2b1f45" stroke-width="1.8" d="M146 149q-14-15-29 2l-6-4M154 149q14-15 29 2l6-4"/>
      </g>
-     <path fill="none" stroke-opacity=".7" d="M120 138q10-6 20 0M160 138q10-6 20 0"/>
-     <!-- mulut -->
-     <ellipse id="mouth" cx="150" cy="186" rx="9" ry="2.2" fill="#ffd6f4" fill-opacity=".85" stroke="none"/>
+     <!-- hidung & blush -->
+     <path fill="none" stroke-opacity=".55" d="M150 158q-3 12 2 16"/>
+     <ellipse cx="122" cy="170" rx="9" ry="5" fill="#ff9fd8" fill-opacity=".3" stroke="none"/>
+     <ellipse cx="178" cy="170" rx="9" ry="5" fill="#ff9fd8" fill-opacity=".3" stroke="none"/>
+     <!-- bibir pink -->
+     <ellipse id="mouth" cx="150" cy="188" rx="10" ry="3" fill="#ff8fc8" fill-opacity=".9" stroke="#ffc2e4" stroke-width=".8"/>
      <!-- aksen hologram -->
-     <circle cx="150" cy="292" r="7" fill="none" stroke="#b58cff"/>
-     <path fill="none" stroke="#b58cff" stroke-opacity=".7" d="M60 330h40M200 330h40M70 350h20M210 350h20"/>
+     <path fill="none" stroke="#b58cff" stroke-opacity=".7" d="M60 370h40M200 370h40M70 386h20M210 386h20"/>
     </g>
    </svg>
   </div>
@@ -199,7 +219,7 @@ function lipSync(mediaStream){
   const buf=new Uint8Array(analyser.fftSize),mouth=$('mouth');
   const tick=()=>{if(!analyser)return;analyser.getByteTimeDomainData(buf);let sum=0;for(const v of buf){const x=(v-128)/128;sum+=x*x}
    const level=Math.min(1,Math.sqrt(sum/buf.length)*6);
-   if(audioCtx.state==='running'){stage.classList.remove('cssmouth');mouth.setAttribute('ry',(2.2+level*9).toFixed(1))}else stage.classList.add('cssmouth');
+   if(audioCtx.state==='running'){stage.classList.remove('cssmouth');mouth.setAttribute('ry',(3+level*8).toFixed(1))}else stage.classList.add('cssmouth');
    raf=requestAnimationFrame(tick)};
   tick();
  }catch{stage.classList.add('cssmouth')}
@@ -259,7 +279,7 @@ function stop(msg){
  clearTimeout(idleTimer);cancelAnimationFrame(raf);analyser=null;
  try{dc&&dc.close()}catch{};try{pc&&pc.close()}catch{};stream&&stream.getTracks().forEach(t=>t.stop());
  remote.srcObject=null;pc=dc=stream=null;live=null;micOn=true;
- $('mouth').setAttribute('ry','2.2');setState('off');
+ $('mouth').setAttribute('ry','3');setState('off');
  $('toggle').disabled=false;$('toggle').textContent='✦ Aktifkan Riri';$('mute').disabled=$('topic').disabled=true;$('mute').textContent='🎙️ Mic aktif';
  say(msg||'Riri istirahat. Ketuk aku kapan saja ✦');
 }
